@@ -2,15 +2,22 @@ import React, { startTransition } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, gql } from "@apollo/client";
 import styled from "styled-components";
+import Movie from '../Components/Movie'
 
 const GET_MOVIE = gql`
     query getMovie($id: Int!) {
         movie(id: $id) {
+            id
             title
             medium_cover_image
             language
             rating
             description_intro
+            isLiked @client
+        }
+        suggestions(id: $id){
+            id
+            medium_cover_image
         }
     }
 `;
@@ -53,7 +60,6 @@ const Poster = styled.div`
     background-position: center center;
 `;
 
-
 export default () => {
     const { id } = useParams();
     const { loading, data} = useQuery(GET_MOVIE, {
@@ -63,17 +69,17 @@ export default () => {
     return (
         <Container>
             <Column>
-                <Title >{loading ? "Loading..." : data.movie.title}</Title>
-                {!loading && data.movie && (
-                    <>
-                        <SubTitle>
-                            {data.movie.language} · {data.movie.rating}
-                        </SubTitle>
-                        <Description>{data.movie.description_intro}</Description>
-                    </>
-                )}   
+                <Title >{loading ? "Loading..." : `${data.movie.title} ${data.movie.isLiked ? "❤️" : "💔"}`}</Title>
+                    <SubTitle>
+                        {data?.movie?.language} · {data?.movie?.rating}
+                    </SubTitle>
+                    <Description>{data?.movie?.description_intro}</Description>  
             </Column>
-            <Poster bg={data && data.movie ? data.movie.medium_cover_image : ""}></Poster>
+            <Poster bg={data?.movie?.medium_cover_image}></Poster>
+            
         </Container>
     )
 };
+//{data.suggestions?.map(s => (
+//                <Movie key={s.id} id={s.id} bg={s.medium_cover_image} />
+//            ))}
